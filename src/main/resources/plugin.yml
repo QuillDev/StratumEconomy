@@ -9,4 +9,7 @@ commands:
     usage: /<command> name
   additem:
     description: Add an item to a merchant
-    usage: /<command>
+    usage: /<command> [Merchant Name] [BuyPrice] [SellPrice]
+  removeitem:
+    description: Remove an item from a merchant
+    usage: /<command> [slot (1-...)]

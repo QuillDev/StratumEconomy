@@ -3,6 +3,8 @@ package tech.quilldev.stratumeconomy;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.java.JavaPlugin;
 import tech.quilldev.stratumeconomy.Commands.AddMerchantItem;
+import tech.quilldev.stratumeconomy.Commands.MerchantItems.RemoveMerchantItem;
+import tech.quilldev.stratumeconomy.Commands.MerchantItems.MerchantItemTabs;
 import tech.quilldev.stratumeconomy.Commands.SpawnMerchant;
 import tech.quilldev.stratumeconomy.Events.MerchantInteractEvent;
 import tech.quilldev.stratumeconomy.Events.MerchantShop;
@@ -29,8 +31,22 @@ public final class StratumEconomy extends JavaPlugin {
 
         pluginManager.registerEvents(new MerchantInteractEvent(), this);
         pluginManager.registerEvents(new MerchantShop(economy), this);
-        Objects.requireNonNull(getCommand("spawnmerchant")).setExecutor(new SpawnMerchant());
-        Objects.requireNonNull(getCommand("additem")).setExecutor(new AddMerchantItem());
+
+        //Setup Commands
+        Objects.requireNonNull(getCommand("spawnmerchant"))
+                .setExecutor(new SpawnMerchant());
+        //Setup remove item command
+        final var removeItemCommand = getCommand("removeItem");
+        if (removeItemCommand != null) {
+            removeItemCommand.setExecutor(new RemoveMerchantItem());
+            removeItemCommand.setTabCompleter(new MerchantItemTabs());
+        }
+
+        final var addItemCommand = getCommand("additem");
+        if (addItemCommand != null) {
+            addItemCommand.setExecutor(new AddMerchantItem());
+            addItemCommand.setTabCompleter(new MerchantItemTabs());
+        }
     }
 
     @Override

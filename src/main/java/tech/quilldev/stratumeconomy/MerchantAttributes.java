@@ -147,11 +147,24 @@ public class MerchantAttributes {
      */
     public static boolean addMerchantItem(String name, ItemStack item) {
         final var items = readMerchantItems(name);
-        System.out.println("null");
         if (items == null) return false;
-        System.out.println("not null");
         items.add(item);
         return writeMerchantItems(name, items);
+    }
+
+    /***
+     * Remove an item from the given merchant
+     * @param name of the merchant
+     * @param index of the item to remove
+     */
+    public static boolean removeItem(String name, int index) {
+        if (index < 0) return false;
+        final var items = getMerchantItems(name);
+        if (items == null) return false;
+        if (index > (items.size() - 1)) return false;
+        items.remove(index);
+        writeMerchantItems(name, items);
+        return true;
     }
 
     /**
@@ -196,5 +209,19 @@ public class MerchantAttributes {
                 .stream()
                 .map(ItemStack::deserializeBytes)
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Return the items of a merchant as an arraylist
+     *
+     * @param name of the merchant
+     * @return the merchants items
+     */
+    public static ArrayList<ItemStack> getMerchantItems(String name) {
+        final var merchant = getMerchant(name);
+        if (merchant == null) return null;
+        final var data = merchant.getPersistentDataContainer();
+        final var itemBytes = data.get(merchantInventoryDataKey, PersistentDataType.BYTE_ARRAY);
+        return deserializeItemList(itemBytes);
     }
 }
