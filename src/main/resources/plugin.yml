@@ -1,0 +1,12 @@
+name: StratumEconomy
+version: ${project.version}
+main: tech.quilldev.stratumeconomy.StratumEconomy
+api-version: 1.16
+
+commands:
+  spawnmerchant:
+    description: Spawns a merchant
+    usage: /<command> name
+  additem:
+    description: Add an item to a merchant
+    usage: /<command>
