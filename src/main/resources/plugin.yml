@@ -2,14 +2,14 @@ name: StratumEconomy
 version: ${project.version}
 main: tech.quilldev.stratumeconomy.StratumEconomy
 api-version: 1.16
+depend: [ Vault ]
 
 commands:
-  spawnmerchant:
-    description: Spawns a merchant
-    usage: /<command> name
-  additem:
-    description: Add an item to a merchant
-    usage: /<command> [Merchant Name] [BuyPrice] [SellPrice]
-  removeitem:
-    description: Remove an item from a merchant
-    usage: /<command> [slot (1-...)]
+  reloadmarket:
+    description: Reloads the market values from the online database
+    permission: stratumeconomy.admin.reloadmarket
+    usage: /<command>
+  addvendoritem:
+    description: Adds a market item to the given merchant
+    permission: stratumeconomy.admin.additem.dynamic
+    usage: /<command> <item>

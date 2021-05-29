@@ -2,67 +2,50 @@ package tech.quilldev.stratumeconomy;
 
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.java.JavaPlugin;
-import tech.quilldev.stratumeconomy.Commands.AddMerchantItem;
-import tech.quilldev.stratumeconomy.Commands.MerchantItems.RemoveMerchantItem;
-import tech.quilldev.stratumeconomy.Commands.MerchantItems.MerchantItemTabs;
-import tech.quilldev.stratumeconomy.Commands.SpawnMerchant;
-import tech.quilldev.stratumeconomy.Events.MerchantInteractEvent;
-import tech.quilldev.stratumeconomy.Events.MerchantShop;
-
-import java.util.Objects;
-import java.util.logging.Logger;
+import tech.quilldev.stratumeconomy.Commands.MarketCommands.ReloadMarketConfig;
+import tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItemCommand;
+import tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItemTabs;
+import tech.quilldev.stratumeconomy.Database.EconomyManager;
+import tech.quilldev.stratumeconomy.Database.MarketDatabaseManager;
+import tech.quilldev.stratumeconomy.Events.OpenVendorWindow;
+import tech.quilldev.stratumeconomy.Market.MarketDataRetriever;
 
 public final class StratumEconomy extends JavaPlugin {
 
-    private static final Logger logger = Logger.getLogger("Minecraft");
-    private static Economy economy = null;
-
     @Override
     public void onEnable() {
-        MerchantAttributes.init(this);
+        final var economyService = getServer().getServicesManager().getRegistration(Economy.class);
+        if (economyService == null) return;
+        final var economy = economyService.getProvider();
+        //Setup the economy keys
+        EconomyKeys.init(this);
 
-        final var pluginManager = getServer().getPluginManager();
-        // Plugin startup logic
-        if (!setupEconomy()) {
-            logger.severe(String.format("[%s] - Disabled due to no Vault dependancy found!", getDescription().getName()));
-            pluginManager.disablePlugin(this);
-            return;
+        final var marketDataRetriever = new MarketDataRetriever();
+        final var marketDatabaseManager = new MarketDatabaseManager();
+        final var economyManager = new EconomyManager(marketDataRetriever, marketDatabaseManager);
+
+        /**
+         * EVENT REGISTERING
+         */
+        final var registry = getServer().getPluginManager();
+        registry.registerEvents(new OpenVendorWindow(marketDataRetriever, this), this);
+
+        /**
+         * Command Setup + configuration
+         */
+        final var reloadMarketCommand = getCommand("reloadmarket");
+        if (reloadMarketCommand != null) {
+            reloadMarketCommand.setExecutor(new ReloadMarketConfig(economyManager));
         }
 
-        pluginManager.registerEvents(new MerchantInteractEvent(), this);
-        pluginManager.registerEvents(new MerchantShop(economy), this);
-
-        //Setup Commands
-        Objects.requireNonNull(getCommand("spawnmerchant"))
-                .setExecutor(new SpawnMerchant());
-        //Setup remove item command
-        final var removeItemCommand = getCommand("removeItem");
-        if (removeItemCommand != null) {
-            removeItemCommand.setExecutor(new RemoveMerchantItem());
-            removeItemCommand.setTabCompleter(new MerchantItemTabs());
-        }
-
-        final var addItemCommand = getCommand("additem");
-        if (addItemCommand != null) {
-            addItemCommand.setExecutor(new AddMerchantItem());
-            addItemCommand.setTabCompleter(new MerchantItemTabs());
+        final var addVendorItemCommand = getCommand("addvendoritem");
+        if (addVendorItemCommand != null) {
+            addVendorItemCommand.setExecutor(new AddVendorItemCommand(marketDataRetriever));
+            addVendorItemCommand.setTabCompleter(new AddVendorItemTabs(marketDataRetriever));
         }
     }
 
     @Override
     public void onDisable() {
-        logger.info(String.format("[%s] Disabled version %s", getDescription().getName(), getDescription().getVersion()));
-    }
-
-    private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            return false;
-        }
-        var rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return false;
-        }
-        economy = rsp.getProvider();
-        return true;
     }
 }
