@@ -2,9 +2,6 @@ package tech.quilldev.stratumeconomy.Market;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
-import tech.quilldev.stratumeconomy.EconomyKeys;
-import tech.quilldev.stratumeconomy.Serialization.StratumSerialization;
 
 public class MarketItem {
 
@@ -30,12 +27,12 @@ public class MarketItem {
         this.sellPrice = sellPrice;
     }
 
-    public double getBuyPrice() {
-        return buyPrice;
+    public float getBuyPrice() {
+        return (float) buyPrice;
     }
 
-    public double getSellPrice() {
-        return sellPrice;
+    public float getSellPrice() {
+        return (float) sellPrice;
     }
 
     public ItemStack getMarketItem() {

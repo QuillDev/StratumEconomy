@@ -44,7 +44,6 @@ public class GoogleSheetReader {
                     final var buyString = Double.parseDouble(values.get(1));
                     final var sellString = Double.parseDouble(values.get(2));
                     final var isStratumString = Boolean.parseBoolean(values.get(3));
-                    System.out.printf("Found Value: MAT: %s, BUY: %s, SELL: %s, STRATUM: %s%n", material, buyString, sellString, isStratumString);
                     putIfAbsent(material, new MarketItem(material, buyString, sellString, isStratumString));
                 }
             } catch (IOException e) {

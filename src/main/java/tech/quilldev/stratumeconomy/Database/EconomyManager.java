@@ -1,8 +1,13 @@
 package tech.quilldev.stratumeconomy.Database;
 
+
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
+import org.bukkit.persistence.PersistentDataType;
+import tech.quilldev.stratumeconomy.EconomyKeys;
 import tech.quilldev.stratumeconomy.Market.MarketDataRetriever;
 import tech.quilldev.stratumeconomy.Market.MarketItem;
+import tech.quilldev.stratumeconomy.StratumEconomy;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -11,13 +16,15 @@ public class EconomyManager {
 
     private final MarketDataRetriever marketDataRetriever;
     private final MarketDatabaseManager marketDatabaseManager;
+    private final Economy economy;
 
     private final HashMap<Material, MarketData> marketDataCache = new HashMap<>();
-    private final HashMap<Material, MarketItem> marketItems = new HashMap<>();
+    private final HashMap<Material, MarketItem> marketItemCache = new HashMap<>();
 
-    public EconomyManager(MarketDataRetriever marketDataRetriever, MarketDatabaseManager marketDatabaseManager) {
+    public EconomyManager(Economy economy, MarketDataRetriever marketDataRetriever, MarketDatabaseManager marketDatabaseManager) {
         this.marketDatabaseManager = marketDatabaseManager;
         this.marketDataRetriever = marketDataRetriever;
+        this.economy = economy;
         this.updateMarketCache();
     }
 
@@ -46,6 +53,8 @@ public class EconomyManager {
      * Update market prices to reflect the current trade volumes
      */
     public void updatePrices() {
+        //TODO: Only update entries that don't exist or have been changed recently, this will
+        //TODO: save a LOT of computation power when we add more items to the list
         marketDataRetriever.getMarketMap().forEach((mat, itemData) -> {
             final var cacheEntry = marketDataCache.get(mat);
 
@@ -63,7 +72,24 @@ public class EconomyManager {
             final var buyPrice = Math.max(0.01, purchaseRatio * baseBuyPrice);
             final var sellPrice = Math.max(0.01, purchaseRatio * baseSellPrice);
 
-            marketItems.put(mat, new MarketItem(mat, buyPrice, sellPrice, false));
+            MarketItem cachedItem;
+            if (!marketItemCache.containsKey(mat)) {
+                cachedItem = new MarketItem(mat, buyPrice, sellPrice, false);
+                marketItemCache.put(mat, cachedItem);
+            } else {
+                cachedItem = marketItemCache.get(mat);
+                cachedItem.setBuyPrice(buyPrice);
+                cachedItem.setSellPrice(sellPrice);
+            }
+
+
+            //Update the price keys on the item
+            final var marketItem = cachedItem.getMarketItem();
+            final var marketItemMeta = marketItem.getItemMeta();
+            final var marketItemDataContainer = marketItemMeta.getPersistentDataContainer();
+            marketItemDataContainer.set(EconomyKeys.buyPriceKey, PersistentDataType.BYTE_ARRAY, StratumEconomy.serializer.serializeFloat((float) buyPrice));
+            marketItemDataContainer.set(EconomyKeys.sellPriceKey, PersistentDataType.BYTE_ARRAY, StratumEconomy.serializer.serializeFloat((float) sellPrice));
+            marketItem.setItemMeta(marketItemMeta);
         });
     }
 
@@ -102,9 +128,27 @@ public class EconomyManager {
     }
 
     /**
+     * Get the market item for the given material
+     *
+     * @param material to check for
+     * @return data for that item
+     */
+    public MarketItem getMarketItem(Material material) {
+        return marketItemCache.getOrDefault(material, null);
+    }
+
+    /**
      * Save all of the current cached market data to the database
      */
     public void saveMarketPrices() {
         marketDataCache.values().forEach(marketDatabaseManager::saveMarketData);
+    }
+
+    public Economy getEconomy() {
+        return economy;
+    }
+
+    public MarketDataRetriever getMarketDataRetriever() {
+        return marketDataRetriever;
     }
 }

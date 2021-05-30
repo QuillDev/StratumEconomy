@@ -38,7 +38,6 @@ public class MarketDatabaseManager {
      * @return the data for the given material
      */
     public MarketData getMarketData(Material material) {
-        System.out.println("SEARCHING FOR " + material.name());
         final var marketDataDocument = findMarketData(material);
 
         //If there is no entry for this item ad one
