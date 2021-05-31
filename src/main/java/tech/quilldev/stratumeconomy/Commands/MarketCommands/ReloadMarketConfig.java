@@ -4,8 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
-import tech.quilldev.stratumeconomy.Database.EconomyManager;
-import tech.quilldev.stratumeconomy.Market.MarketDataRetriever;
+import tech.quilldev.stratumeconomy.Market.EconomyManager;
 
 public class ReloadMarketConfig implements CommandExecutor {
 

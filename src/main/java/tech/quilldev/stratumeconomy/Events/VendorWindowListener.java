@@ -4,6 +4,7 @@ package tech.quilldev.stratumeconomy.Events;
 import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,14 +18,13 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
-import tech.quilldev.stratumeconomy.Database.EconomyManager;
+import tech.quilldev.stratumeconomy.Market.EconomyManager;
 import tech.quilldev.stratumeconomy.EconomyKeys;
 import tech.quilldev.stratumeconomy.Market.MarketDataRetriever;
 import tech.quilldev.stratumeconomy.StratumEconomy;
 import tech.quilldev.stratumeconomy.Vendors.VendorHelper;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class VendorWindowListener implements Listener {
 
@@ -36,8 +36,6 @@ public class VendorWindowListener implements Listener {
         this.marketDataRetriever = economyManager.getMarketDataRetriever();
         this.economyManager = economyManager;
         this.economy = economyManager.getEconomy();
-
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, this::updateMarketWindowEvents, 20L, 100L);
     }
 
     /**
@@ -69,9 +67,7 @@ public class VendorWindowListener implements Listener {
             final var marketItem = economyManager.getMarketItem(marketData.getMaterial());
             if (marketItem == null) continue;
             //Create the window item
-            System.out.println("ITM:" + item.getItemMeta().getPersistentDataContainer().getKeys());
             final var windowItem = item.clone(); //get a clone of the base item to use as a window item
-            System.out.println("WDITM: " + windowItem.getItemMeta().getPersistentDataContainer().getKeys());
             final var windowItemMeta = windowItem.getItemMeta(); //get the meta for the window item
             final var windowItemData = windowItemMeta.getPersistentDataContainer(); //get the data for the window item
             windowItemData.set(
@@ -80,9 +76,7 @@ public class VendorWindowListener implements Listener {
                     StratumEconomy.serializer.serializeItemStack(item)
             ); //Write the base item to the window item
             windowItem.setItemMeta(windowItemMeta); //set the meta to the new meta we just made
-            System.out.println("PWDITM: " + windowItem.getItemMeta().getPersistentDataContainer().getKeys());
             VendorHelper.setPriceLore(windowItem, false); //set the price on the item
-            System.out.println("PLWITM: " + windowItem.getItemMeta().getPersistentDataContainer().getKeys());
             vendorWindowItems.add(windowItem); //add the item to the items to be drawn to the window
         }
 
@@ -164,12 +158,19 @@ public class VendorWindowListener implements Listener {
             if (buy) {
                 economy.withdrawPlayer(player, price);
                 economyManager.incrementBuy(clicked.getType(), qty);
-                return;
-            }
+            } else {
 
-            //Deposit money to the player if they sold
-            economy.depositPlayer(player, price);
-            economyManager.incrementSell(clicked.getType(), qty);
+                //Deposit money to the player if they sold
+                economy.depositPlayer(player, price);
+                economyManager.incrementSell(clicked.getType(), qty);
+            }
+            System.out.printf("Processed Transaction : BUY:%s, ClickType:%s | BA:%s SA:%s%n",
+                    buy,
+                    clickType,
+                    economyManager.getMarketDataFromCache(marketItem.getMaterial()).getBuyAmount(),
+                    economyManager.getMarketDataFromCache(marketItem.getMaterial()).getSellAmount()
+                    );
+            updateMarketWindowEvents(marketItem.getMaterial());
         } catch (Exception e) {
             e.printStackTrace();
             player.sendMessage("An error occurred while processing this transaction!");
@@ -180,12 +181,13 @@ public class VendorWindowListener implements Listener {
     /**
      * Event for updating market windows with new prices
      */
-    public void updateMarketWindowEvents() {
-        economyManager.updatePrices();
+    public void updateMarketWindowEvents(Material material) {
+        economyManager.updateMaterialPrice(material);
         Bukkit.getOnlinePlayers().forEach(player -> {
             final var view = player.getOpenInventory();
             if (!VendorHelper.isVendorView(view)) return;
-            updateDynamicValues(view.getTopInventory());
+            if (!view.getTopInventory().contains(material)) return;
+            updateDynamicValues(material, view.getTopInventory());
         });
     }
 
@@ -194,14 +196,7 @@ public class VendorWindowListener implements Listener {
      *
      * @param inventory to update the dynamic values in
      */
-    public void updateDynamicValues(Inventory inventory) {
-        for (final var slot : inventory.getContents()) {
-            if (slot == null) continue;
-            final var marketData = economyManager.getMarketItem(slot.getType());
-            if (marketData == null) continue;
-
-            //Create the window item
-            VendorHelper.setPriceLore(slot, false);
-        }
+    public void updateDynamicValues(Material material, Inventory inventory) {
+        VendorHelper.setPriceLore(inventory.getItem(inventory.first(material)), false);
     }
 }

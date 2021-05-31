@@ -9,14 +9,26 @@ public class MarketItem {
     private double buyPrice;
     private double sellPrice;
     private boolean isStratum;
+    private double baseBuyPrice;
+    private double baseSellPrice;
     private ItemStack marketItem;
 
     public MarketItem(Material material, double buyPrice, double sellPrice, boolean isStratum) {
         this.material = material;
         this.buyPrice = buyPrice;
+        this.baseBuyPrice = buyPrice;
+        this.baseSellPrice = sellPrice;
         this.sellPrice = sellPrice;
         this.isStratum = isStratum;
         this.marketItem = new ItemStack(material);
+    }
+
+    public double getBaseBuyPrice() {
+        return baseBuyPrice;
+    }
+
+    public double getBaseSellPrice() {
+        return baseSellPrice;
     }
 
     public void setBuyPrice(double buyPrice) {

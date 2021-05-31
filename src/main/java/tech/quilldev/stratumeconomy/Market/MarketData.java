@@ -1,8 +1,9 @@
-package tech.quilldev.stratumeconomy.Database;
+package tech.quilldev.stratumeconomy.Market;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bukkit.Material;
+import tech.quilldev.stratumeconomy.Database.MarketDataKey;
 
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;

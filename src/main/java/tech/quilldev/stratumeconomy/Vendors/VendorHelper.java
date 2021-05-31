@@ -10,15 +10,13 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import tech.quilldev.stratumeconomy.Database.EconomyManager;
+import tech.quilldev.stratumeconomy.Market.EconomyManager;
 import tech.quilldev.stratumeconomy.EconomyKeys;
 import tech.quilldev.stratumeconomy.Market.MarketItem;
 import tech.quilldev.stratumeconomy.StratumEconomy;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.text.NumberFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -26,6 +24,9 @@ import java.util.stream.Collectors;
 public class VendorHelper {
 
     private static EconomyManager economyManager;
+    //Setup money formatting stuff
+    private final static Locale locale = new Locale("en", "US");
+    private final static NumberFormat moneyFormatter = NumberFormat.getCurrencyInstance(locale);
 
     public static void init(EconomyManager economyManager) {
         VendorHelper.economyManager = economyManager;
@@ -142,8 +143,8 @@ public class VendorHelper {
         }
         //Get the lore
         final var lore = new ArrayList<Component>();
-        lore.add(Component.text("Buy: ").append(Component.text(marketItem.getBuyPrice())).color(TextColor.color(0xD21B)));
-        lore.add(Component.text("Sell: ").append(Component.text(marketItem.getSellPrice())).color(TextColor.color(0xFF5C4B)));
+        lore.add(Component.text("Buy: ").append(Component.text(moneyFormatter.format(marketItem.getBuyPrice()))).color(TextColor.color(0xD21B)));
+        lore.add(Component.text("Sell: ").append(Component.text(moneyFormatter.format(marketItem.getSellPrice()))).color(TextColor.color(0xFF5C4B)));
         //If keep lore is on we keep the lore
         if (keepLore) {
             //If there is no lore, just make it an empty list
