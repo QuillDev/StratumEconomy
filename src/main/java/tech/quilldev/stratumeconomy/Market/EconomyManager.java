@@ -1,10 +1,11 @@
 package tech.quilldev.stratumeconomy.Market;
 
 
+import moe.quill.StratumCommon.Database.DataTypes.MarketData;
+import moe.quill.StratumCommon.Database.IDatabaseService;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.persistence.PersistentDataType;
-import tech.quilldev.stratumeconomy.Database.MarketDatabaseManager;
 import tech.quilldev.stratumeconomy.EconomyKeys;
 import tech.quilldev.stratumeconomy.StratumEconomy;
 
@@ -14,14 +15,14 @@ import java.util.Objects;
 public class EconomyManager {
 
     private final MarketDataRetriever marketDataRetriever;
-    private final MarketDatabaseManager marketDatabaseManager;
+    private final IDatabaseService databaseService;
     private final Economy economy;
 
     private final HashMap<Material, MarketData> marketDataCache = new HashMap<>();
     private final HashMap<Material, MarketItem> marketItemCache = new HashMap<>();
 
-    public EconomyManager(Economy economy, MarketDataRetriever marketDataRetriever, MarketDatabaseManager marketDatabaseManager) {
-        this.marketDatabaseManager = marketDatabaseManager;
+    public EconomyManager(Economy economy, MarketDataRetriever marketDataRetriever, IDatabaseService databaseService) {
+        this.databaseService = databaseService;
         this.marketDataRetriever = marketDataRetriever;
         this.economy = economy;
         this.updateMarketCache();
@@ -39,12 +40,26 @@ public class EconomyManager {
      * Update the market cache with new values from the sheet
      */
     public void updateMarketCache() {
-        this.marketDataRetriever.getMarketMap()
-                .keySet()
-                .stream()
-                .map(marketDatabaseManager::getMarketData)
-                .filter(Objects::nonNull)
-                .forEach(entry -> marketDataCache.put(entry.getMaterial(), entry));
+        final var marketData = new HashMap<Material, MarketData>();
+
+        for (final var key : marketDataRetriever.getMarketMap().keySet()) {
+            final var value = marketDataRetriever.getMarketMap().get(key);
+
+            //Data existing in the db
+            final var dbMarketData = databaseService.getMarketData(key);
+
+            //If the existing data does not exist create new data
+            if (dbMarketData == null) {
+                final var newMarketData = new MarketData(key, 1, 1);
+                marketData.put(key, newMarketData);
+                databaseService.saveMarketData(newMarketData);
+                continue;
+            }
+            // just use the existing data otherwise
+            marketData.put(key, dbMarketData);
+        }
+
+        marketDataCache.putAll(marketData);
         updatePrices();
     }
 
@@ -146,7 +161,7 @@ public class EconomyManager {
      * Save all of the current cached market data to the database
      */
     public void saveMarketPrices() {
-        marketDataCache.values().forEach(marketDatabaseManager::saveMarketData);
+        databaseService.saveMarketData(marketDataCache.values());
     }
 
     public Economy getEconomy() {
