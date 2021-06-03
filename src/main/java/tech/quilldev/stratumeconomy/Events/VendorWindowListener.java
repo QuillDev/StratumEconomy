@@ -164,12 +164,7 @@ public class VendorWindowListener implements Listener {
                 economy.depositPlayer(player, price);
                 economyManager.incrementSell(clicked.getType(), qty);
             }
-            System.out.printf("Processed Transaction : BUY:%s, ClickType:%s | BA:%s SA:%s%n",
-                    buy,
-                    clickType,
-                    economyManager.getMarketDataFromCache(marketItem.getMaterial()).getBuyAmount(),
-                    economyManager.getMarketDataFromCache(marketItem.getMaterial()).getSellAmount()
-                    );
+
             updateMarketWindowEvents(marketItem.getMaterial());
         } catch (Exception e) {
             e.printStackTrace();
