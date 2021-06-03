@@ -12,4 +12,8 @@ commands:
   addvendoritem:
     description: Adds a market item to the given merchant
     permission: stratumeconomy.admin.additem.dynamic
-    usage: /<command> <item>
+    usage: /<command> <vendor> <item>
+  removevendoritem:
+    description: Removes a vendor item from a vendor
+    permission: stratumeconomy.admin.remoteitem.dynamic
+    usage: /<command> <vendor> <item>

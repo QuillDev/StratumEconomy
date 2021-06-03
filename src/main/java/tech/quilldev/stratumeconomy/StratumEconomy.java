@@ -9,8 +9,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.quilldev.stratumeconomy.Commands.MarketCommands.ReloadMarketConfig;
-import tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItemCommand;
-import tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItemTabs;
+import tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItem.AddVendorItemCommand;
+import tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItem.AddVendorItemTabs;
+import tech.quilldev.stratumeconomy.Commands.VendorCommands.RemoveVendorItem.RemoveVendorItem;
+import tech.quilldev.stratumeconomy.Commands.VendorCommands.RemoveVendorItem.RemoveVendorItemTabs;
 import tech.quilldev.stratumeconomy.Market.EconomyManager;
 import tech.quilldev.stratumeconomy.Events.VendorWindowListener;
 import tech.quilldev.stratumeconomy.Market.MarketDataRetriever;
@@ -65,6 +67,12 @@ public final class StratumEconomy extends JavaPlugin {
         if (addVendorItemCommand != null) {
             addVendorItemCommand.setExecutor(new AddVendorItemCommand(marketDataRetriever));
             addVendorItemCommand.setTabCompleter(new AddVendorItemTabs(marketDataRetriever));
+        }
+
+        final var removeVendorItem = getCommand("removevendoritem");
+        if (removeVendorItem != null) {
+            removeVendorItem.setExecutor(new RemoveVendorItem(marketDataRetriever));
+            removeVendorItem.setTabCompleter(new RemoveVendorItemTabs(marketDataRetriever));
         }
 
     }

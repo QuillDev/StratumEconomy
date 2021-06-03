@@ -1,4 +1,4 @@
-package tech.quilldev.stratumeconomy.Commands.VendorCommands;
+package tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItem;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

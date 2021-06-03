@@ -1,4 +1,4 @@
-package tech.quilldev.stratumeconomy.Commands.VendorCommands;
+package tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItem;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;

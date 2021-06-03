@@ -5,6 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
@@ -109,13 +110,13 @@ public class VendorHelper {
         }
 
         //Get inventory data
-        final var vendorInventoryBytes = entityData.get(EconomyKeys.vendorKey, PersistentDataType.BYTE_ARRAY);
+        final var vendorInventoryBytes = entityData.get(EconomyKeys.vendorInventory, PersistentDataType.BYTE_ARRAY);
         final var vendorInventory = StratumEconomy.serializer.deserializeItemList(vendorInventoryBytes);
         if (vendorInventory == null) return false; //make sure data is good
 
         //Add the item to the vendor inventory
         vendorInventory.add(itemToAdd);
-        entityData.set(EconomyKeys.vendorKey, PersistentDataType.BYTE_ARRAY, StratumEconomy.serializer.serializeItemList(vendorInventory));
+        entityData.set(EconomyKeys.vendorInventory, PersistentDataType.BYTE_ARRAY, StratumEconomy.serializer.serializeItemList(vendorInventory));
         return true;
     }
 
@@ -193,5 +194,25 @@ public class VendorHelper {
         data.remove(EconomyKeys.sellPriceKey);
         item.setItemMeta(meta);
         return item;
+    }
+
+    public static boolean removeDynamicItem(Entity vendor, Material material) {
+        final var vendorData = vendor.getPersistentDataContainer();
+        final var vendorInventoryBytes = vendorData.get(EconomyKeys.vendorInventory, PersistentDataType.BYTE_ARRAY);
+        final var vendorInventory = StratumEconomy.serializer.deserializeItemList(vendorInventoryBytes);
+        if (vendorInventory == null) return false;
+
+        for (final var item : vendorInventory) {
+            if (!item.getType().equals(material)) continue;
+            final var itemMeta = item.getItemMeta();
+            if (itemMeta == null) continue;
+            final var itemData = itemMeta.getPersistentDataContainer();
+            if (!itemData.has(EconomyKeys.isDynamic, PersistentDataType.BYTE_ARRAY)) continue;
+            vendorInventory.remove(item);
+            vendorData.set(EconomyKeys.vendorInventory, PersistentDataType.BYTE_ARRAY, StratumEconomy.serializer.serializeItemList(vendorInventory));
+            return true;
+        }
+
+        return true;
     }
 }
