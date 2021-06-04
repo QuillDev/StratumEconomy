@@ -1,5 +1,7 @@
 package tech.quilldev.stratumeconomy.Market;
 
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
