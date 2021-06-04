@@ -1,5 +1,6 @@
 package tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItem;
 
+import com.google.inject.Inject;
 import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -10,14 +11,19 @@ import tech.quilldev.stratumeconomy.Market.MarketDataRetriever;
 import tech.quilldev.stratumeconomy.Vendors.VendorHelper;
 
 public class AddVendorItemCommand extends MarketCommand {
-    public AddVendorItemCommand(MarketDataRetriever marketDataRetriever) {
+
+    private final VendorHelper vendorHelper;
+
+    @Inject
+    public AddVendorItemCommand(MarketDataRetriever marketDataRetriever, VendorHelper vendorHelper) {
         super(marketDataRetriever);
+        this.vendorHelper = vendorHelper;
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length < 2) return false;
-        final var vendor = VendorHelper.getVendor(args[0]);
+        final var vendor = vendorHelper.getVendor(args[0]);
 
         //If the vendor is null, tell the user
         if (vendor == null) {
@@ -38,7 +44,7 @@ public class AddVendorItemCommand extends MarketCommand {
             return true;
         }
 
-        final var success = VendorHelper.addDynamicItem(vendor, marketItem);
+        final var success = vendorHelper.addDynamicItem(vendor, marketItem);
         sender.sendMessage(String.format("%s in adding %s to vendor %s.",
                 (success) ? "Succeeded" : "Failed",
                 material.name(),

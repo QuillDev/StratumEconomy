@@ -1,5 +1,7 @@
 package tech.quilldev.stratumeconomy.Market;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -7,13 +9,17 @@ import tech.quilldev.stratumeconomy.EconomyKeys;
 
 import java.util.HashMap;
 
+@Singleton
 public class MarketDataRetriever {
 
     private final static GoogleSheetReader sheetReader = new GoogleSheetReader();
     private final HashMap<Material, MarketItem> marketMap = new HashMap<>();
 
-    public MarketDataRetriever() {
-        //TODO: Put this in config
+    private final EconomyKeys economyKeys;
+
+    @Inject
+    public MarketDataRetriever(EconomyKeys economyKeys) {
+        this.economyKeys = economyKeys;
         reloadMarketValues();
     }
 
@@ -45,7 +51,7 @@ public class MarketDataRetriever {
             return null;
         }
         final var itemData = itemMeta.getPersistentDataContainer();
-        if (!itemData.has(EconomyKeys.isDynamic, PersistentDataType.BYTE_ARRAY)) {
+        if (!itemData.has(economyKeys.isDynamic, PersistentDataType.BYTE_ARRAY)) {
             return null;
         }
         //If the data is good, get the market data

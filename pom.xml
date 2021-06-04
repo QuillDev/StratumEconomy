@@ -86,14 +86,14 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-            <version>4.3.0-beta1</version>
-        </dependency>
-        <dependency>
             <groupId>moe.quill</groupId>
             <artifactId>stratum-common-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>5.0.1</version>
         </dependency>
     </dependencies>
 </project>

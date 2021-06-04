@@ -1,6 +1,8 @@
 package tech.quilldev.stratumeconomy.Events;
 
 
+import com.google.inject.Inject;
+import moe.quill.StratumCommon.Serialization.ISerializer;
 import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -17,11 +19,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.Plugin;
 import tech.quilldev.stratumeconomy.Market.EconomyManager;
 import tech.quilldev.stratumeconomy.EconomyKeys;
 import tech.quilldev.stratumeconomy.Market.MarketDataRetriever;
-import tech.quilldev.stratumeconomy.StratumEconomy;
 import tech.quilldev.stratumeconomy.Vendors.VendorHelper;
 
 import java.util.ArrayList;
@@ -29,13 +29,27 @@ import java.util.ArrayList;
 public class VendorWindowListener implements Listener {
 
     private final MarketDataRetriever marketDataRetriever;
+    private final ISerializer serializer;
     private final EconomyManager economyManager;
+    private final EconomyKeys economyKeys;
+    private final VendorHelper vendorHelper;
     private final Economy economy;
 
-    public VendorWindowListener(EconomyManager economyManager, Plugin plugin) {
-        this.marketDataRetriever = economyManager.getMarketDataRetriever();
+    @Inject
+    public VendorWindowListener(Economy economy,
+                                MarketDataRetriever marketDataRetriever,
+                                EconomyManager economyManager,
+                                ISerializer serializer,
+                                VendorHelper vendorHelper,
+                                EconomyKeys economyKeys
+    ) {
+        this.economy = economy;
+        this.marketDataRetriever = marketDataRetriever;
         this.economyManager = economyManager;
-        this.economy = economyManager.getEconomy();
+        this.vendorHelper = vendorHelper;
+        this.serializer = serializer;
+        this.economyKeys = economyKeys;
+
     }
 
     /**
@@ -48,12 +62,12 @@ public class VendorWindowListener implements Listener {
         if (event.getHand() != EquipmentSlot.HAND) return; //if it's the wrong hand event, ignore it
         final var entity = event.getRightClicked();
         final var entityData = entity.getPersistentDataContainer();
-        if (!entityData.has(EconomyKeys.vendorKey, PersistentDataType.BYTE_ARRAY)) return;
-        if (!entityData.has(EconomyKeys.vendorInventory, PersistentDataType.BYTE_ARRAY)) return;
+        if (!entityData.has(economyKeys.vendorKey, PersistentDataType.BYTE_ARRAY)) return;
+        if (!entityData.has(economyKeys.vendorInventory, PersistentDataType.BYTE_ARRAY)) return;
 
         //Get the data for the given vendor inventory
-        final var inventoryData = StratumEconomy.serializer.deserializeItemList(
-                entityData.get(EconomyKeys.vendorInventory, PersistentDataType.BYTE_ARRAY)
+        final var inventoryData = serializer.deserializeItemList(
+                entityData.get(economyKeys.vendorInventory, PersistentDataType.BYTE_ARRAY)
         );
         if (inventoryData == null) return;
         //Get the player
@@ -71,12 +85,12 @@ public class VendorWindowListener implements Listener {
             final var windowItemMeta = windowItem.getItemMeta(); //get the meta for the window item
             final var windowItemData = windowItemMeta.getPersistentDataContainer(); //get the data for the window item
             windowItemData.set(
-                    EconomyKeys.baseItemKey,
+                    economyKeys.baseItemKey,
                     PersistentDataType.BYTE_ARRAY,
-                    StratumEconomy.serializer.serializeItemStack(item)
+                    serializer.serializeItemStack(item)
             ); //Write the base item to the window item
             windowItem.setItemMeta(windowItemMeta); //set the meta to the new meta we just made
-            VendorHelper.setPriceLore(windowItem, false); //set the price on the item
+            vendorHelper.setPriceLore(windowItem, false); //set the price on the item
             vendorWindowItems.add(windowItem); //add the item to the items to be drawn to the window
         }
 
@@ -88,7 +102,7 @@ public class VendorWindowListener implements Listener {
 
     @EventHandler
     public void processVendorClicks(InventoryClickEvent event) {
-        if (!VendorHelper.isVendorView(event.getView())) return;
+        if (!vendorHelper.isVendorView(event.getView())) return;
         event.setCancelled(true);
         processTransaction((Player) event.getWhoClicked(), event.getCurrentItem(), event.getClick());
     }
@@ -96,7 +110,7 @@ public class VendorWindowListener implements Listener {
     public void processTransaction(Player player, ItemStack clicked, ClickType clickType) {
         try {
             if (clicked == null) return;
-            final var baseItem = VendorHelper.getBaseItem(clicked);
+            final var baseItem = vendorHelper.getBaseItem(clicked);
             //Get the transaction type and quantity
             final boolean buy = (
                     clickType.equals(ClickType.SHIFT_LEFT)
@@ -113,7 +127,7 @@ public class VendorWindowListener implements Listener {
 
             //Get the query item
             assert baseItem != null;
-            final var queryItem = VendorHelper.getQueryCopy(baseItem);
+            final var queryItem = vendorHelper.getQueryCopy(baseItem);
             queryItem.setAmount(qty);
 
             //Get the price of the transaction
@@ -180,7 +194,7 @@ public class VendorWindowListener implements Listener {
         economyManager.updateMaterialPrice(material);
         Bukkit.getOnlinePlayers().forEach(player -> {
             final var view = player.getOpenInventory();
-            if (!VendorHelper.isVendorView(view)) return;
+            if (!vendorHelper.isVendorView(view)) return;
             if (!view.getTopInventory().contains(material)) return;
             updateDynamicValues(material, view.getTopInventory());
         });
@@ -192,6 +206,6 @@ public class VendorWindowListener implements Listener {
      * @param inventory to update the dynamic values in
      */
     public void updateDynamicValues(Material material, Inventory inventory) {
-        VendorHelper.setPriceLore(inventory.getItem(inventory.first(material)), false);
+        vendorHelper.setPriceLore(inventory.getItem(inventory.first(material)), false);
     }
 }

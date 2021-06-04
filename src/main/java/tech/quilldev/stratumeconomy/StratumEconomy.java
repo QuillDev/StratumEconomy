@@ -1,8 +1,14 @@
 package tech.quilldev.stratumeconomy;
 
 
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import moe.quill.StratumCommon.Commands.StratumCommand;
 import moe.quill.StratumCommon.Database.IDatabaseService;
 import moe.quill.StratumCommon.KeyManager.IKeyManager;
+import moe.quill.StratumCommon.Plugin.StratumConfig;
+import moe.quill.StratumCommon.Plugin.StratumConfigBuilder;
+import moe.quill.StratumCommon.Plugin.StratumPlugin;
 import moe.quill.StratumCommon.Serialization.ISerializer;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,74 +19,60 @@ import tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItem.AddVen
 import tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItem.AddVendorItemTabs;
 import tech.quilldev.stratumeconomy.Commands.VendorCommands.RemoveVendorItem.RemoveVendorItem;
 import tech.quilldev.stratumeconomy.Commands.VendorCommands.RemoveVendorItem.RemoveVendorItemTabs;
-import tech.quilldev.stratumeconomy.Market.EconomyManager;
+import tech.quilldev.stratumeconomy.DI.PluginModule;
 import tech.quilldev.stratumeconomy.Events.VendorWindowListener;
-import tech.quilldev.stratumeconomy.Market.MarketDataRetriever;
-import tech.quilldev.stratumeconomy.Vendors.VendorHelper;
 
-public final class StratumEconomy extends JavaPlugin {
+public final class StratumEconomy extends StratumPlugin {
 
-    public static ISerializer serializer;
-    private EconomyManager economyManager;
     private static final Logger logger = LoggerFactory.getLogger(StratumEconomy.class.getSimpleName());
+
+    //Inject listeners
+    @Inject
+    VendorWindowListener vendorWindowListener;
+
+    //Inject commands
+    @Inject
+    ReloadMarketConfig reloadMarketConfig;
+    @Inject
+    AddVendorItemCommand addVendorItemCommand;
+    @Inject
+    AddVendorItemTabs addVendorItemTabs;
+    @Inject
+    RemoveVendorItem removeVendorItem;
+    @Inject
+    RemoveVendorItemTabs removeVendorItemTabs;
+
+    public StratumEconomy() {
+        super(new StratumConfigBuilder()
+                .setUseDatabase(true)
+                .setUseKeyManager(true)
+                .setUseSerialization(true)
+                .build()
+        );
+    }
 
     @Override
     public void onEnable() {
-        //Start Stratum serialization
-        final var serviceManager = getServer().getServicesManager();
-        final var serializeService = serviceManager.getRegistration(ISerializer.class);
-        final var keyManagerService = serviceManager.getRegistration(IKeyManager.class);
-        final var dbService = serviceManager.getRegistration(IDatabaseService.class);
-        if (serializeService == null || keyManagerService == null || dbService == null) {
-            return;
-        }
-        StratumEconomy.serializer = serializeService.getProvider();
-        final var keyManager = keyManagerService.getProvider();
-        final var dbManager = dbService.getProvider();
-        keyManager.getKeyMap().forEach(logger::info);
-
+        super.onEnable();
         final var economyService = getServer().getServicesManager().getRegistration(Economy.class);
         if (economyService == null) return;
         final var economy = economyService.getProvider();
-        //Setup the economy keys
-        EconomyKeys.init(this);
 
-        final var marketDataRetriever = new MarketDataRetriever();
-        economyManager = new EconomyManager(economy, marketDataRetriever, dbManager);
-        VendorHelper.init(economyManager);
+        final var injector = Guice.createInjector(new PluginModule(this, economy));
+        injector.injectMembers(this);
 
-        /**
-         * EVENT REGISTERING
-         */
-        final var registry = getServer().getPluginManager();
-        registry.registerEvents(new VendorWindowListener(economyManager, this), this);
+        registerEvent(vendorWindowListener);
 
-        /**
-         * Command Setup + configuration
-         */
-        final var reloadMarketCommand = getCommand("reloadmarket");
-        if (reloadMarketCommand != null) {
-            reloadMarketCommand.setExecutor(new ReloadMarketConfig(economyManager));
-        }
-
-        final var addVendorItemCommand = getCommand("addvendoritem");
-        if (addVendorItemCommand != null) {
-            addVendorItemCommand.setExecutor(new AddVendorItemCommand(marketDataRetriever));
-            addVendorItemCommand.setTabCompleter(new AddVendorItemTabs(marketDataRetriever));
-        }
-
-        final var removeVendorItem = getCommand("removevendoritem");
-        if (removeVendorItem != null) {
-            removeVendorItem.setExecutor(new RemoveVendorItem(marketDataRetriever));
-            removeVendorItem.setTabCompleter(new RemoveVendorItemTabs(marketDataRetriever));
-        }
+        registerCommand(
+                new StratumCommand("reloadmarket", reloadMarketConfig, null),
+                new StratumCommand("addvendoritem", addVendorItemCommand, addVendorItemTabs),
+                new StratumCommand("removevendoritem", removeVendorItem, removeVendorItemTabs)
+        );
 
     }
 
     @Override
     public void onDisable() {
-        if (economyManager != null) {
-            economyManager.saveMarketPrices();
-        }
+        super.onDisable();
     }
 }

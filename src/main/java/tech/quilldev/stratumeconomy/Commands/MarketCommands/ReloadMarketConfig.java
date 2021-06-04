@@ -1,5 +1,6 @@
 package tech.quilldev.stratumeconomy.Commands.MarketCommands;
 
+import com.google.inject.Inject;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -8,8 +9,9 @@ import tech.quilldev.stratumeconomy.Market.EconomyManager;
 
 public class ReloadMarketConfig implements CommandExecutor {
 
-    private EconomyManager economyManager;
+    private final EconomyManager economyManager;
 
+    @Inject
     public ReloadMarketConfig(EconomyManager economyManager) {
         this.economyManager = economyManager;
     }

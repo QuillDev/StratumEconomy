@@ -1,30 +1,41 @@
 package tech.quilldev.stratumeconomy.Market;
 
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import moe.quill.StratumCommon.Database.DataTypes.MarketData;
 import moe.quill.StratumCommon.Database.IDatabaseService;
+import moe.quill.StratumCommon.Serialization.ISerializer;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.persistence.PersistentDataType;
 import tech.quilldev.stratumeconomy.EconomyKeys;
-import tech.quilldev.stratumeconomy.StratumEconomy;
 
 import java.util.HashMap;
-import java.util.Objects;
 
+@Singleton
 public class EconomyManager {
 
     private final MarketDataRetriever marketDataRetriever;
+    private final EconomyKeys economyKeys;
     private final IDatabaseService databaseService;
+    private final ISerializer serializer;
     private final Economy economy;
 
     private final HashMap<Material, MarketData> marketDataCache = new HashMap<>();
     private final HashMap<Material, MarketItem> marketItemCache = new HashMap<>();
 
-    public EconomyManager(Economy economy, MarketDataRetriever marketDataRetriever, IDatabaseService databaseService) {
+    @Inject
+    public EconomyManager(Economy economy,
+                          MarketDataRetriever marketDataRetriever,
+                          IDatabaseService databaseService,
+                          ISerializer serializer,
+                          EconomyKeys economyKeys) {
         this.databaseService = databaseService;
         this.marketDataRetriever = marketDataRetriever;
         this.economy = economy;
+        this.serializer = serializer;
+        this.economyKeys = economyKeys;
         this.updateMarketCache();
     }
 
@@ -103,8 +114,8 @@ public class EconomyManager {
         final var marketItem = cachedItem.getMarketItem();
         final var marketItemMeta = marketItem.getItemMeta();
         final var marketItemDataContainer = marketItemMeta.getPersistentDataContainer();
-        marketItemDataContainer.set(EconomyKeys.buyPriceKey, PersistentDataType.BYTE_ARRAY, StratumEconomy.serializer.serializeFloat(buyPrice));
-        marketItemDataContainer.set(EconomyKeys.sellPriceKey, PersistentDataType.BYTE_ARRAY, StratumEconomy.serializer.serializeFloat(sellPrice));
+        marketItemDataContainer.set(economyKeys.buyPriceKey, PersistentDataType.BYTE_ARRAY, serializer.serializeFloat(buyPrice));
+        marketItemDataContainer.set(economyKeys.sellPriceKey, PersistentDataType.BYTE_ARRAY, serializer.serializeFloat(sellPrice));
         marketItem.setItemMeta(marketItemMeta);
     }
 

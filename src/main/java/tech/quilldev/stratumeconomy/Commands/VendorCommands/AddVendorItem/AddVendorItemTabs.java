@@ -1,5 +1,6 @@
 package tech.quilldev.stratumeconomy.Commands.VendorCommands.AddVendorItem;
 
+import com.google.inject.Inject;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -13,16 +14,19 @@ import java.util.stream.Collectors;
 
 public class AddVendorItemTabs implements TabCompleter {
 
-    public MarketDataRetriever marketDataRetriever;
+    private final MarketDataRetriever marketDataRetriever;
+    private final VendorHelper vendorHelper;
 
-    public AddVendorItemTabs(MarketDataRetriever marketDataRetriever) {
+    @Inject
+    public AddVendorItemTabs(MarketDataRetriever marketDataRetriever, VendorHelper vendorHelper) {
         this.marketDataRetriever = marketDataRetriever;
+        this.vendorHelper = vendorHelper;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
         if (args.length == 1) {
-            return VendorHelper.getVendorNames()
+            return vendorHelper.getVendorNames()
                     .stream()
                     .filter(name -> name.toLowerCase().contains(args[0].toLowerCase()))
                     .collect(Collectors.toList());
