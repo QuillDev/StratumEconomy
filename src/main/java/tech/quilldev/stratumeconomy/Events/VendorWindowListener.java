@@ -2,7 +2,7 @@ package tech.quilldev.stratumeconomy.Events;
 
 
 import com.google.inject.Inject;
-import moe.quill.StratumCommon.Serialization.ISerializer;
+import moe.quill.StratumCommonApi.Serialization.ISerializer;
 import net.kyori.adventure.text.Component;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;

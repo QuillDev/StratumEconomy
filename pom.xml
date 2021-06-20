@@ -12,7 +12,7 @@
     <name>Stratum Economy</name>
 
     <properties>
-        <java.version>15</java.version>
+        <java.version>16</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -54,7 +54,7 @@
 
     <repositories>
         <repository>
-            <id>papermc-repo</id>
+            <id>papermc</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
         </repository>
         <repository>
@@ -69,9 +69,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
+            <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.16.5-R0.1-SNAPSHOT</version>
+            <version>1.17-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -85,15 +85,29 @@
             <version>1.7</version>
             <scope>provided</scope>
         </dependency>
+
+        <!--Stratum Common-->
         <dependency>
             <groupId>moe.quill</groupId>
-            <artifactId>stratum-common-api</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <artifactId>stratum-common-utils</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>5.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.7</version>
         </dependency>
     </dependencies>
 </project>

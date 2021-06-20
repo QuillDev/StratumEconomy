@@ -1,8 +1,12 @@
 name: StratumEconomy
 version: ${project.version}
 main: tech.quilldev.stratumeconomy.StratumEconomy
-api-version: 1.16
-depend: [ Vault ]
+api-version: 1.17
+depend:
+  - Vault
+  - StratumCommon
+softdepend:
+  - StratumSurvival
 
 commands:
   reloadmarket:

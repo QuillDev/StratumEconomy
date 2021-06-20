@@ -3,9 +3,9 @@ package tech.quilldev.stratumeconomy.Market;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import moe.quill.StratumCommon.Database.DataTypes.MarketData;
-import moe.quill.StratumCommon.Database.IDatabaseService;
-import moe.quill.StratumCommon.Serialization.ISerializer;
+import moe.quill.StratumCommonApi.Database.DataTypes.MarketData;
+import moe.quill.StratumCommonApi.Database.IDatabaseService;
+import moe.quill.StratumCommonApi.Serialization.ISerializer;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.persistence.PersistentDataType;

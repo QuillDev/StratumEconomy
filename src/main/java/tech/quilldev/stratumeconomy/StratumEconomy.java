@@ -3,9 +3,9 @@ package tech.quilldev.stratumeconomy;
 
 import com.google.inject.Guice;
 import com.google.inject.Inject;
-import moe.quill.StratumCommon.Commands.StratumCommand;
-import moe.quill.StratumCommon.Plugin.StratumConfigBuilder;
-import moe.quill.StratumCommon.Plugin.StratumPlugin;
+import moe.quill.stratumcommonutils.Commands.StratumCommand;
+import moe.quill.stratumcommonutils.Plugin.Configuration.StratumConfigBuilder;
+import moe.quill.stratumcommonutils.Plugin.StratumPlugin;
 import net.milkbowl.vault.economy.Economy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

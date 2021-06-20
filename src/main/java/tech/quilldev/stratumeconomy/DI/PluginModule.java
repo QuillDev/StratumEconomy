@@ -1,10 +1,9 @@
 package tech.quilldev.stratumeconomy.DI;
 
 import com.google.inject.AbstractModule;
-import moe.quill.StratumCommon.Database.IDatabaseService;
-import moe.quill.StratumCommon.KeyManager.IKeyManager;
-import moe.quill.StratumCommon.Plugin.StratumPlugin;
-import moe.quill.StratumCommon.Serialization.ISerializer;
+import moe.quill.StratumCommonApi.Database.IDatabaseService;
+import moe.quill.StratumCommonApi.KeyManager.IKeyManager;
+import moe.quill.StratumCommonApi.Serialization.ISerializer;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.Plugin;
 import tech.quilldev.stratumeconomy.EconomyKeys;

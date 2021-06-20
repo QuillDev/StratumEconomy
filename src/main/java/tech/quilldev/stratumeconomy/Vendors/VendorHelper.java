@@ -3,7 +3,7 @@ package tech.quilldev.stratumeconomy.Vendors;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import moe.quill.StratumCommon.Serialization.ISerializer;
+import moe.quill.StratumCommonApi.Serialization.ISerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
